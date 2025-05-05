@@ -3,7 +3,7 @@
 
 ## Additional parameters:
 #             cost function: A function to calculate the cost of a path between two nodes.
-#             rewire_radius: The radius within which to check for nearby nodes to re-wire
+#             radius: The radius within which to check for nearby nodes to re-wire
 #             Near function: A function to find all the nodes within a certain radius of a given node.
 
 import numpy as np
