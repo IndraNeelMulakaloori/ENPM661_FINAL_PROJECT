@@ -84,7 +84,7 @@ class Node:
         self.y = y
         self.parent = None
 class RRT:
-    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=5000, step_size=5, goal_sample_rate=0.2, goal_threshold=10):
+    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=5000, step_size=5, goal_sample_rate=0.15, goal_threshold=5):
         self.start = Node(start[0], start[1])
         self.goal = Node(goal[0], goal[1])
         self.max_iter = max_iter
@@ -154,7 +154,7 @@ class RRT:
             if self.collision_free(nearest, new_node):
                 cv2.line(self.visualize_map,(nearest.x,nearest.y),(new_node.x,new_node.y),(255,255,255),1)  # Mark the new node
                 video_frame_counter += 1
-                if video_frame_counter == 10:
+                if video_frame_counter == 1:
                     # cv2.circle(self.visualize_map, (initial_position[1], initial_position[0]), 3, MAGENTA, -1)
                     # cv2.circle(self.visualize_map, (final_position[1], final_position[0]), 3, GREEN, -1)
                     video_output.write(self.visualize_map)

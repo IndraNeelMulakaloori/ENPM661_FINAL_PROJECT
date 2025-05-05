@@ -93,7 +93,7 @@ class Node:
         self.node_cost = 0
         self.parent = None
 class RRT:
-    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=10000, step_size=5, goal_sample_rate=0.15, goal_threshold=10):
+    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=5000, step_size=5, goal_sample_rate=0.15, goal_threshold=5):
         self.start = Node(start[0], start[1])
         self.goal = Node(goal[0], goal[1])
         self.max_iter = max_iter
@@ -161,7 +161,7 @@ class RRT:
     def near(self, new_node):
         # Find all nodes within the radius of new_node
         near_nodes = []
-        tuning_constant = 40 # 30-50 cm is asweet spot tested (multiple times)
+        tuning_constant = 35 # 30-50 cm is asweet spot tested (multiple times)
         n = len(self.tree)
         ## defining radius as per the RRT* paper
         ## r ∝ (log(n)/n)^(1/d) where n = number of nodes, d = dimension
@@ -194,12 +194,12 @@ class RRT:
             print(f"New Node: {new_node.x}, {new_node.y}")
             if self.collision_free(nearest, new_node):
                 cv2.line(self.visualize_map,(nearest.x,nearest.y),(new_node.x,new_node.y),(255,255,255),1)  # Mark the new node
-                # video_frame_counter += 1
-                # if video_frame_counter == 10:
-                #     # cv2.circle(self.visualize_map, (initial_position[1], initial_position[0]), 3, MAGENTA, -1)
-                #     # cv2.circle(self.visualize_map, (final_position[1], final_position[0]), 3, GREEN, -1)
-                #     video_output.write(self.visualize_map)
-                #     video_frame_counter = 0
+                video_frame_counter += 1
+                if video_frame_counter == 1:
+                    # cv2.circle(self.visualize_map, (initial_position[1], initial_position[0]), 3, MAGENTA, -1)
+                    # cv2.circle(self.visualize_map, (final_position[1], final_position[0]), 3, GREEN, -1)
+                    video_output.write(self.visualize_map)
+                    video_frame_counter = 0
                 # self.tree.append(new_node)
                 X_near_tree = self.near(new_node)
                 x_min = nearest
@@ -253,7 +253,7 @@ def main():
     
     robot_radius = int(np.ceil(RRADIUS*100)) # in cm / pixels
     # clearance = int(np.ceil(float(input(f"Enter the clearance radius in mm: ")))/10) # in cm / pixels
-    clearance = 20 # in cm / pixels
+    clearance = 5 # in cm / pixels
     
     obstacle_map = gen_obstacle_map()
     # cv2.imshow("Obstacle Map", obstacle_map)
@@ -269,10 +269,10 @@ def main():
     # cv2.destroyAllWindows()
     cv2.circle(expanded_map_2, start , 5, (255, 255, 255), -1)
     cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
-    # video_output = create_video()
+    video_output = create_video(filename="RRT_star_Traversal.mp4")
     rrt = RRT(start, goal, obstacle_map,expanded_map_2)
-    # path = rrt.plan(video_output=video_output)
-    path = rrt.plan()
+    path = rrt.plan(video_output=video_output)
+    # path = rrt.plan()
     
     if path is not None:
         for (x, y) in path:
@@ -280,11 +280,11 @@ def main():
             # Color the path green
             cv2.circle(expanded_map_2, (x, y), 3, (0, 255, 0), -1)
         
-        # for _ in range(30):
+        for _ in range(30):
             # Write the frame to the video file
-            # video_output.write(expanded_map_2)
+            video_output.write(expanded_map_2)
         
-        # video_output.release()
+        video_output.release()
         
         
         cv2.imshow("RRT Path", expanded_map_2)
@@ -298,7 +298,7 @@ def main():
         cv2.destroyAllWindows()
     # cv2.imshow("Expanded Map", expanded_map_2)
     # Release the video writer
-    
+    video_output.release()
 
 if __name__ == "__main__":
     main()
