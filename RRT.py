@@ -84,7 +84,7 @@ class Node:
         self.y = y
         self.parent = None
 class RRT:
-    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=3000, step_size=5, goal_sample_rate=0.2, goal_threshold=10):
+    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=5000, step_size=5, goal_sample_rate=0.2, goal_threshold=10):
         self.start = Node(start[0], start[1])
         self.goal = Node(goal[0], goal[1])
         self.max_iter = max_iter

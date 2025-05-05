@@ -1,0 +1,52 @@
+RRT(start, goal, max_iter, step_size):
+    Initialize tree T with start node
+    for i = 1 to max_iter:
+        if random() < goal_sample_rate:
+            sample = goal
+        else:
+            sample = sample_random_point()
+
+        nearest = nearest_node(T, sample)
+        new_node = steer(nearest, sample, step_size)
+
+        if is_collision_free(nearest, new_node):
+            T.add_node(new_node)
+            T.add_edge(nearest, new_node)
+
+            if distance(new_node, goal) < threshold:
+                return build_path(start, new_node)
+    
+    return failure
+
+
+
+RRT* Algorithm:
+
+1. Initialize tree T with start node x_start
+
+2. For i in range(N):
+    a. x_rand = SampleRandomPoint()
+
+    b. x_nearest = NearestNeighbor(T, x_rand)
+
+    c. x_new = Steer(x_nearest, x_rand, step_size)
+
+    d. If collision_free(x_nearest, x_new):
+        i.    X_near = Near(T, x_new, radius)
+        ii.   x_min = x_nearest
+        iii.  c_min = Cost(x_nearest) + Cost(x_nearest to x_new)
+
+        iv.   For each x_near in X_near:
+                  If collision_free(x_near, x_new) and
+                     Cost(x_near) + Cost(x_near to x_new) < c_min:
+                      x_min = x_near
+                      c_min = Cost(x_near) + Cost(x_near to x_new)
+
+        v.    Add x_new to T with parent x_min
+
+        vi.   For each x_near in X_near:
+                  If collision_free(x_new, x_near) and
+                     Cost(x_new) + Cost(x_new to x_near) < Cost(x_near):
+                      Change parent of x_near to x_new
+
+3. Return path from x_start to x_goal (if found)
