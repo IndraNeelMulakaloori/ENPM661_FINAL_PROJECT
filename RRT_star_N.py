@@ -13,9 +13,8 @@
 
 
 import numpy as np
-import random
-import math
 import cv2
+import json
 HEIGHT = 300 # cm
 WIDTH = 600 # cm
 WRADIUS = .033
@@ -99,7 +98,7 @@ class Node:
         self.node_cost = 0
         self.parent = None
 class RRT:
-    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=5000, step_size=5, goal_sample_rate=0.15, goal_threshold=5):
+    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=10000, step_size=5, goal_sample_rate=0.15, goal_threshold=5):
         self.start = Node(start[0], start[1])
         self.goal = Node(goal[0], goal[1])
         self.max_iter = max_iter
@@ -265,10 +264,11 @@ class RRT:
                 
                 if self.is_goal_reached(new_node):
                     print(f"Goal Reached! with node count {len(self.tree)} within {iteration_counter} iterations")
-                    return self.get_path(new_node)
+                    return self.get_path(new_node),iteration_counter,len(self.tree)
 
         print("Failed to find a path")
-        return None
+        return None,self.max_iter,len(self.tree)
+
 def create_video(filename="RRT_Traversal.mp4"):
     """
     Creates and initializes a VideoWriter object for saving the traversal video.
@@ -287,12 +287,13 @@ def create_video(filename="RRT_Traversal.mp4"):
     return video_output  
 
 def main():
-    start = (74, 50)
-    goal = (510, 180)
-    
+    parameters = json.load(open("parameters.json"))
+    start = (parameters["start"]['x'], parameters["start"]['y'])
+    goal = (parameters["goal"]['x'], parameters["goal"]['y'])
+    # clearance = int(np.ceil(float(parameters["clearance"]))/10) # in cm / pixels
+    clearance = (parameters["clearance"]) 
     robot_radius = int(np.ceil(RRADIUS*100)) # in cm / pixels
     # clearance = int(np.ceil(float(input(f"Enter the clearance radius in mm: ")))/10) # in cm / pixels
-    clearance = 5 # in cm / pixels
     
     obstacle_map = gen_obstacle_map()
     # cv2.imshow("Obstacle Map", obstacle_map)
@@ -310,9 +311,8 @@ def main():
     cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
     video_output = create_video(filename="RRT_star_N_Traversal.mp4")
     rrt = RRT(start, goal, obstacle_map,expanded_map_2)
-    path = rrt.plan(video_output=video_output)
-    # path = rrt.plan()
-    
+    path,iterations,node_count = rrt.plan(video_output=video_output)
+    # path,iterations,node_count = rrt.plan()
     if path is not None:
         for (x, y) in path:
             # expanded_map_2[y, x] = [0, 255, 0]
@@ -321,6 +321,7 @@ def main():
         
         for _ in range(30):
             # Write the frame to the video file
+            cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             video_output.write(expanded_map_2)
         
         # video_output.release()
@@ -332,6 +333,7 @@ def main():
     else:
         print("No path found.")
         # video_output.release()
+        cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         cv2.imshow("Obstacle Map", expanded_map_2)
         cv2.waitKey(0)
         cv2.destroyAllWindows()

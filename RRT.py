@@ -2,6 +2,7 @@ import numpy as np
 import random
 import math
 import cv2
+import json
 HEIGHT = 300 # cm
 WIDTH = 600 # cm
 WRADIUS = .033
@@ -84,7 +85,7 @@ class Node:
         self.y = y
         self.parent = None
 class RRT:
-    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=5000, step_size=5, goal_sample_rate=0.15, goal_threshold=5):
+    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter=10000, step_size=5, goal_sample_rate=0.15, goal_threshold=5):
         self.start = Node(start[0], start[1])
         self.goal = Node(goal[0], goal[1])
         self.max_iter = max_iter
@@ -144,7 +145,8 @@ class RRT:
 
     def plan(self,video_output=None):
         video_frame_counter = 0
-        for _ in range(self.max_iter):
+        
+        for iteration_counter in range(self.max_iter):
             rand_node = self.sample_random_point()
             nearest = self.nearest_node(rand_node)
             new_node = self.steer(nearest, rand_node)
@@ -161,12 +163,12 @@ class RRT:
                     video_frame_counter = 0
                 self.tree.append(new_node)
                 if self.is_goal_reached(new_node):
-                    print(f"Goal Reached! with node count {len(self.tree)}")
-                    return self.get_path(new_node)
+                    print(f"Goal Reached! with node count {len(self.tree)} with {iteration_counter} iterations")
+                    return self.get_path(new_node),iteration_counter,len(self.tree)
 
         print("Failed to find a path")
-        return None
-def create_video(filename="RRT_Traversal.mp4"):
+        return None,self.max_iter,len(self.tree)
+def create_video(filename):
     """
     Creates and initializes a VideoWriter object for saving the traversal video.
 
@@ -184,12 +186,13 @@ def create_video(filename="RRT_Traversal.mp4"):
     return video_output  
 
 def main():
-    start = (74, 50)
-    goal = (510, 180)
-    
+    parameters = json.load(open("parameters.json"))
+    start = (parameters["start"]['x'], parameters["start"]['y'])
+    goal = (parameters["goal"]['x'], parameters["goal"]['y'])
+    # clearance = int(np.ceil(float(parameters["clearance"]))/10) # in cm / pixels
+    clearance = (parameters["clearance"]) 
     robot_radius = int(np.ceil(RRADIUS*100)) # in cm / pixels
     # clearance = int(np.ceil(float(input(f"Enter the clearance radius in mm: ")))/10) # in cm / pixels
-    clearance = 9 # in cm / pixels
     
     obstacle_map = gen_obstacle_map()
     # cv2.imshow("Obstacle Map", obstacle_map)
@@ -205,9 +208,9 @@ def main():
     # cv2.destroyAllWindows()
     cv2.circle(expanded_map_2, start , 5, (255, 255, 255), -1)
     cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
-    video_output = create_video()
+    video_output = create_video(filename="RRT_Traversal.mp4")
     rrt = RRT(start, goal, obstacle_map,expanded_map_2)
-    path = rrt.plan(video_output=video_output)
+    path,iterations,node_count = rrt.plan(video_output=video_output)
     
     if path is not None:
         for (x, y) in path:
@@ -217,9 +220,10 @@ def main():
         
         for _ in range(30):
             # Write the frame to the video file
+            cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             video_output.write(expanded_map_2)
         
-        video_output.release()
+        # video_output.release()
         
         
         cv2.imshow("RRT Path", expanded_map_2)
@@ -227,13 +231,14 @@ def main():
         cv2.destroyAllWindows()
     else:
         print("No path found.")
-        video_output.release()
+        # video_output.release()
+        cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         cv2.imshow("Obstacle Map", expanded_map_2)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     # cv2.imshow("Expanded Map", expanded_map_2)
     # Release the video writer
-    
+    video_output.release()
 
 if __name__ == "__main__":
     main()
