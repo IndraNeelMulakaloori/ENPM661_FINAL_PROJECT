@@ -109,6 +109,14 @@ class RRT:
         self.visualize_map = visualize_map
         self.height, self.width = obstacle_map.shape
         self.tree = [self.start]
+        self.sigma = 0.1 * np.linalg.norm([self.width, self.height])
+        self.sigma_min = 0.01 * np.linalg.norm([self.width, self.height])
+        self.sigma_max = max(self.width, self.height)
+        self.progress_buffer = []
+        self.failure_buffer = []
+        self.closest_node = None
+        self.closest_node_distance = float('inf')
+
 
     def sample_random_point(self):
         ## Too high a goal_sample_rate (e.g. > 20%) might bias the search too much and ruin exploration.
@@ -119,31 +127,73 @@ class RRT:
         else:
             return self.probability_density_function()
 
+    def update_sigma(self):
+        # Initialize these once in your class __init__
+        if not hasattr(self, 'sigma'):
+            self.sigma = 0.1 * np.linalg.norm([self.width, self.height])
+            self.sigma_min = 0.01 * np.linalg.norm([self.width, self.height])
+            self.sigma_max = max(self.width, self.height)
+            self.progress_buffer = []
+            self.failure_buffer = []
+
+        alpha = 1.02  # For increasing sigma
+        beta = 0.98  # For decreasing sigma
+        M = 20       # Rolling window size
+
+        recent_progress = sum(self.progress_buffer[-M:]) / max(1, len(self.progress_buffer[-M:]))
+        recent_failures = sum(self.failure_buffer[-M:]) / max(1, len(self.failure_buffer[-M:]))
+
+        if recent_failures > .8:
+            self.sigma = min(self.sigma_max, self.sigma * alpha)
+            print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
+        
+        elif recent_progress > 0.1:
+            self.sigma = max(self.sigma_min, self.sigma * beta)
+            print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
+        elif recent_progress < 0.1:
+            self.sigma = min(self.sigma_max, self.sigma * alpha)
+            print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
+
     def probability_density_function(self):
         success = False
 
         while not success:
-            random_sampling = np.random.rand()
-
             ## 1) Compute the line vector from start to goal
             line_vec = np.array([self.goal.x - self.start.x, self.goal.y - self.start.y])
 
             ## 2) Normalize the line vector
             line_length = np.linalg.norm(line_vec)
-            
-            ## 3) Unit vector along the line
+            if line_length == 0:
+                return Node(self.start.x, self.start.y)
             line_unit = line_vec / line_length
-            
-            ## 4) Perpendicular vector to the line
+
+            ## 3) Perpendicular vector to the line
             line_normal = np.array([-line_unit[1], line_unit[0]])
 
-            ## 5) Randomly sample a point along the line
-            # t = np.random.rand()
-            point_on_line = np.array([self.start.x, self.start.y]) + random_sampling * line_vec
+            ## 4) Compute t_min and t_max for both directions (ray-box intersection in both directions)
+            def compute_bounds(start_coord, dir_component, bound):
+                if dir_component == 0:
+                    return -np.inf, np.inf
+                t1 = -start_coord / dir_component
+                t2 = (bound - 1 - start_coord) / dir_component
+                return min(t1, t2), max(t1, t2)
 
-            ## 6) # Apply Gaussian offset perpendicular to the line
-            sigma = line_length // 2  # Or dynamically adjust if needed
-            offset_distance = np.random.normal(0, sigma)
+            t_min_x, t_max_x = compute_bounds(self.start.x, line_unit[0], self.width)
+            t_min_y, t_max_y = compute_bounds(self.start.y, line_unit[1], self.height)
+
+            t_min = max(t_min_x, t_min_y)
+            t_max = min(t_max_x, t_max_y)
+
+            if t_max < t_min:
+                return Node(self.start.x, self.start.y)  # No valid extension
+
+            ## 5) Sample a point along the line in both directions
+            t = np.random.uniform(t_min, t_max)
+            point_on_line = np.array([self.start.x, self.start.y]) + t * line_unit
+
+            ## 6) Apply Gaussian offset perpendicular to the line
+            #sigma = line_length // 2  # Or dynamically adjust if needed
+            offset_distance = np.random.normal(0, self.sigma)
 
             ## 7) Bias the point along the normal vector
             biased_point = point_on_line + offset_distance * line_normal
@@ -152,15 +202,18 @@ class RRT:
             ## 8) Check if the point is within the bounds of the map
             if x < 0 or x >= self.width or y < 0 or y >= self.height:
                 continue
-            
+
             ## 9) Check if the point is in an obstacle
             if self.obstacle_map[y, x] == 1:
+                self.failure_buffer.append(1)
                 continue
 
             success = True
+            self.failure_buffer.append(0)
 
         return Node(x, y)
-        #### Dynamic sigma computation
+
+
     
     def nearest_node(self, rand_node):
         return min(self.tree, key=lambda node: (node.x - rand_node.x)**2 + (node.y - rand_node.y)**2)
@@ -294,9 +347,51 @@ class RRT:
                 ## Rewire the tree
                 self.rewire(new_node)
 
+                if self.closest_node is None or self.closest_node_distance > self.cost(new_node, self.goal):
+                    self.closest_node = new_node
+                    self.closest_node_distance = self.cost(new_node, self.goal)
+                    self.progress_buffer.append(1)
+                    self.update_sigma()
+                else:
+                    self.progress_buffer.append(0)
+                    self.update_sigma()
+
                 video_frame_counter += 1
                 if video_frame_counter == 1:
                     draw_map = self.visualize_map.copy()
+
+                    # Code to draw sigma bounds.
+                    ###                    
+                    # Draw centerline bounds at ±sigma.
+                    line_vec = np.array([self.goal.x - self.start.x, self.goal.y - self.start.y])
+                    line_length = np.linalg.norm(line_vec)
+                    if line_length == 0:
+                        return  # Avoid division by zero.
+
+                    line_unit = line_vec / line_length
+                    line_normal = np.array([-line_unit[1], line_unit[0]])  # Perpendicular to centerline.
+
+                    # Offset lines at ±sigma.
+                    offset = self.sigma
+                    start_point = np.array([self.start.x, self.start.y])
+                    goal_point = np.array([self.goal.x, self.goal.y])
+
+                    offset1_start = start_point + offset * line_normal
+                    offset1_goal = goal_point + offset * line_normal
+                    offset2_start = start_point - offset * line_normal
+                    offset2_goal = goal_point - offset * line_normal
+
+                    # Convert to integer pixel coordinates.
+                    offset1_start = tuple(np.round(offset1_start).astype(int))
+                    offset1_goal = tuple(np.round(offset1_goal).astype(int))
+                    offset2_start = tuple(np.round(offset2_start).astype(int))
+                    offset2_goal = tuple(np.round(offset2_goal).astype(int))
+
+                    # Draw the two offset lines in gray.
+                    cv2.line(draw_map, offset1_start, offset1_goal, color=(128, 128, 128), thickness=1)
+                    cv2.line(draw_map, offset2_start, offset2_goal, color=(128, 128, 128), thickness=1)
+                    ###
+
                     cv2.circle(draw_map, (rand_node.x,rand_node.y), 5, (255, 255, 255), -1)  # Mark the new node
                     
                     for node in self.tree:
@@ -306,7 +401,7 @@ class RRT:
                     video_frame_counter = 0
                     print(f"New Node: {new_node.x}, {new_node.y}")
                     cv2.imshow("RRT", draw_map)
-                    cv2.waitKey(1)
+                    cv2.waitKey(0)
                 
                 if self.is_goal_reached(new_node):
                     print(f"Goal Reached! with node count {len(self.tree)} within {iteration_counter} iterations")
