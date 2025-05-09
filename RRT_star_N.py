@@ -136,7 +136,7 @@ class RRT:
         point_on_line = np.array([self.start.x, self.start.y]) + random_sampling * line_vec
 
         ## 6) # Apply Gaussian offset perpendicular to the line
-        sigma = line_length // 2  # Or dynamically adjust if needed
+        sigma = line_length // 3  # Or dynamically adjust if needed
         offset_distance = np.random.normal(0, sigma)
 
         ## 7) Bias the point along the normal vector
