@@ -7,9 +7,10 @@
         "x": 510,
         "y": 180
     },
-    "clearance": 15,
-    "max_iterations": 7500,
-    "step_size": 5,
+    "clearance": 25,
+    "max_iterations": 10000,
+    "step_size": 50,
     "goal_sample_rate" : 0.15,
     "goal_threshold" : 3
+    
 }

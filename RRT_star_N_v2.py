@@ -98,7 +98,7 @@ class Node:
         self.node_cost = 0
         self.parent = None
 class RRT:
-    def __init__(self, start, goal, obstacle_map, visualize_map, max_iter=10000, step_size=30, goal_sample_rate=0.15, goal_threshold=5):
+    def __init__(self, start, goal, obstacle_map, visualize_map,max_iter, step_size, goal_sample_rate, goal_threshold):
         self.start = Node(start[0], start[1])
         self.goal = Node(goal[0], goal[1])
         self.max_iter = max_iter
@@ -454,7 +454,8 @@ def main():
         cv2.circle(expanded_map_2, start , 5, (255, 0, 255), -1)
         cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
         video_output = create_video(filename="RRT_star_N_2_Traversal.mp4")
-        rrt = RRT(start, goal, obstacle_map, expanded_map_2)
+        max_iterations,step_size,goal_sample_rate,goal_threshold = parameters['max_iterations'],parameters['step_size'],parameters['goal_sample_rate'],parameters['goal_threshold']
+        rrt = RRT(start, goal, obstacle_map,expanded_map_2,max_iterations,step_size,goal_sample_rate,goal_threshold)
         path,iterations,node_count = rrt.plan(video_output=video_output)
         # path,iterations,node_count = rrt.plan()
         if path is not None:
