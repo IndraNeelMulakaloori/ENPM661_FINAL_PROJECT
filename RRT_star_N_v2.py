@@ -453,7 +453,7 @@ def main():
         # cv2.destroyAllWindows()
         cv2.circle(expanded_map_2, start , 5, (255, 0, 255), -1)
         cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
-        video_output = create_video(filename="RRT_star_N_Traversal.mp4")
+        video_output = create_video(filename="RRT_star_N_2_Traversal.mp4")
         rrt = RRT(start, goal, obstacle_map, expanded_map_2)
         path,iterations,node_count = rrt.plan(video_output=video_output)
         # path,iterations,node_count = rrt.plan()
