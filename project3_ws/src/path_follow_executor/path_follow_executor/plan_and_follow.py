@@ -515,7 +515,7 @@ def main():
         path,iterations,node_count = rrt.plan(video_output=video_output)
         # path,iterations,node_count = rrt.plan()
         if path is not None:
-            with open("/home/masum/project3_ws/src/path_follower_pkg/path_coords.txt", "w") as f:
+            with open("/home/masum/project3_ws/src/path_follow_executor/path_coords.txt", "w") as f:
                 for x, y in path:
                 # divide by 100 to convert cm→m
                     f.write(f"{x/100.0:.3f},{-(y/100.0 -1.5):.3f}\n")
