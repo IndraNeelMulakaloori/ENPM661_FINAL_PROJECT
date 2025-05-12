@@ -23,15 +23,17 @@ While exploratory, this often leads to **slow convergence** toward the goal in c
 RRT*N improves convergence by sampling points **closer to the optimal trajectory** using a **normal distribution** around the straight line from start to goal.
 
 Let:
-- $( \vec{z}_{start}, \vec{z}_{goal} )$ be the start and goal points.
-- $( \vec{L} = \vec{z}_{goal} - \vec{z}_{start} )$
-- $( \vec{u}_L = \frac{\vec{L}}{\|\vec{L}\|} )$ be the unit vector along $( \vec{L} )$
-- $( \vec{n}_L = [-u_{Ly}, u_{Lx}] )$ be the **normal** (perpendicular) direction to the line.
+- $(\vec{z}_{start}, \vec{z}_{goal})$ be the start and goal points.
+- $(\vec{L} = \vec{z}_{goal} - \vec{z}_{start})$
+- $(\vec{u}_L = \frac{\vec{L}}{\|\vec{L}\|})$ be the unit vector along $( \vec{L})$
+- $(\vec{n}_L = [-u_{Ly}, u_{Lx}])$ be the **normal** (perpendicular) direction to the line.
 
 Then:
-$$[
+$$
+[
 \vec{z}_{sample} = \vec{z}_{start} + t \cdot \vec{L} + \delta \cdot \vec{n}_L
-]$$
+]
+$$
 
 Where:
 - $( t \sim \text{Uniform}(0, 1) )$ — samples **along** the centerline.
