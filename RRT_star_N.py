@@ -15,6 +15,8 @@
 import numpy as np
 import cv2
 import json
+import time
+import functools
 HEIGHT = 300 # cm
 WIDTH = 600 # cm
 WRADIUS = .033
@@ -22,7 +24,17 @@ RRADIUS = .22
 WDIS = .287
 
 
-        
+# Timer decorator to measure execution time of functions
+def timer(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()  # Start time
+        result = func(*args, **kwargs)  # Execute the wrapped function
+        end_time = time.perf_counter()  # End time
+        run_time = end_time - start_time  # Calculate runtime
+        print(f"Finished {func.__name__!r} in {run_time:.4f} secs")
+        return result  # Return the result of the wrapped function
+    return wrapper
 def gen_obstacle_map():
     # Set the height and width of the image in pixels.
     height = HEIGHT

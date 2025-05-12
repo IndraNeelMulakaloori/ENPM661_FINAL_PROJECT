@@ -15,12 +15,25 @@
 import numpy as np
 import cv2
 import json
+import time
+import functools
 HEIGHT = 300 # cm
 WIDTH = 600 # cm
 WRADIUS = .033
 RRADIUS = .22
 WDIS = .287
 
+# Timer decorator to measure execution time of functions
+def timer(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()  # Start time
+        result = func(*args, **kwargs)  # Execute the wrapped function
+        end_time = time.perf_counter()  # End time
+        run_time = end_time - start_time  # Calculate runtime
+        print(f"Finished {func.__name__!r} in {run_time:.4f} secs")
+        return result  # Return the result of the wrapped function
+    return wrapper
 
         
 def gen_obstacle_map():
@@ -329,7 +342,7 @@ class RRT:
                 if new_cost < node.node_cost:
                     node.parent = new_node
                     node.node_cost = new_cost
-
+    @timer
     def plan(self,video_output=None):
         video_frame_counter = 0
         iteration_counter = 0
@@ -400,8 +413,8 @@ class RRT:
                     video_output.write(draw_map)
                     video_frame_counter = 0
                     print(f"New Node: {new_node.x}, {new_node.y}")
-                    cv2.imshow("RRT", draw_map)
-                    cv2.waitKey(0)
+                    # cv2.imshow("RRT", draw_map)
+                    # cv2.waitKey(0)
                 
                 if self.is_goal_reached(new_node):
                     print(f"Goal Reached! with node count {len(self.tree)} within {iteration_counter} iterations")
@@ -453,7 +466,7 @@ def main():
         # cv2.destroyAllWindows()
         cv2.circle(expanded_map_2, start , 5, (255, 0, 255), -1)
         cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
-        video_output = create_video(filename="RRT_star_N_2_Traversal.mp4")
+        video_output = create_video(filename="RRT_star_N_v2_Traversal.mp4")
         max_iterations,step_size,goal_sample_rate,goal_threshold = parameters['max_iterations'],parameters['step_size'],parameters['goal_sample_rate'],parameters['goal_threshold']
         rrt = RRT(start, goal, obstacle_map,expanded_map_2,max_iterations,step_size,goal_sample_rate,goal_threshold)
         path,iterations,node_count = rrt.plan(video_output=video_output)
@@ -472,16 +485,16 @@ def main():
                 cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
                 video_output.write(expanded_map_2)
             
-            cv2.imshow("RRT Path", expanded_map_2)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            # cv2.imshow("RRT Path", expanded_map_2)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
         else:
             print("No path found.")
             # video_output.release()
             cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            cv2.imshow("Obstacle Map", expanded_map_2)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            # cv2.imshow("Obstacle Map", expanded_map_2)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
     finally:
         video_output.release()
 

@@ -8,7 +8,7 @@ def pad_frame(frame, target_size):
 caps = [
     cv2.VideoCapture("RRT_Traversal.mp4"),
     cv2.VideoCapture("RRT_star_Traversal.mp4"),
-    cv2.VideoCapture("RRT_star_N_Traversal.mp4"),
+    cv2.VideoCapture("RRT_star_N_v2_Traversal.mp4"),
 ]
 
 # Get target frame width and height (assumes all are same)
