@@ -62,6 +62,8 @@ To balance **goal convergence** and **global exploration**, sigma $( \sigma )$ i
 
 This makes the sampling **adaptive**, allowing RRT\*N to escape local minima while prioritizing optimal paths.
 
+## Comparison of algorithms:
+<video controls src="videos/stacked_output.mp4" title="Title"></video>
 
 ## Result
 
