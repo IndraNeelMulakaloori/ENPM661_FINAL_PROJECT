@@ -467,6 +467,7 @@ def main():
         cv2.circle(expanded_map_2, start , 5, (255, 0, 255), -1)
         cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
         video_output = create_video(filename="RRT_star_N_v2_Traversal.mp4")
+        cv2.putText(expanded_map_2, f"RRT*N", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         max_iterations,step_size,goal_sample_rate,goal_threshold = parameters['max_iterations'],parameters['step_size'],parameters['goal_sample_rate'],parameters['goal_threshold']
         rrt = RRT(start, goal, obstacle_map,expanded_map_2,max_iterations,step_size,goal_sample_rate,goal_threshold)
         path,iterations,node_count = rrt.plan(video_output=video_output)
@@ -482,7 +483,7 @@ def main():
             
             for _ in range(30):
                 # Write the frame to the video file
-                cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (20, 290), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
                 video_output.write(expanded_map_2)
             
             # cv2.imshow("RRT Path", expanded_map_2)
@@ -491,7 +492,7 @@ def main():
         else:
             print("No path found.")
             # video_output.release()
-            cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (20, 290), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             # cv2.imshow("Obstacle Map", expanded_map_2)
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()

@@ -6,7 +6,7 @@ def pad_frame(frame, target_size):
 
 # Load all videos
 caps = [
-    cv2.VideoCapture("RRT_Traversal.mp4"),
+    # cv2.VideoCapture("RRT_Traversal.mp4"),
     cv2.VideoCapture("RRT_star_Traversal.mp4"),
     cv2.VideoCapture("RRT_star_N_v2_Traversal.mp4"),
 ]
