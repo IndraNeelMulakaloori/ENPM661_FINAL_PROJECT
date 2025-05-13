@@ -1,15 +1,17 @@
 # RRT*N 
 
 This algorithm is an improved version of RRT* by manipulating the generation nodes using probabilistic Normal(Gaussian) distribution.
+
 ## How to run:
 1) Clone the repository \
 `git clone https://github.com/IndraNeelMulakaloori/ENPM661_FINAL_PROJECT.git`
-2) For every algorithm, such as RRT, RRT*, RRT_star_N(fixed), RRT_star_N_dynamic, run the scripts 
+2) For every algorithm, such as `RRT, RRT*, RRT_star_N(fixed), RRT_star_N_dynamic`, run the scripts 
 ```
 python3 RRT.py
 python3 RRT_star.py
-python3 RRT_star_N.py
-python3 RRT_star_N_dynamic.py
+python3 RRT_star_N.py # Fixed sigma
+python3 RRT_star_N_dynamic.py # dynamic sigma
+python3 Moving_obstacle_RRT_STAR_N.py # dynamic obstacles
 ```
 3) During the execution, you might see the terminal showing the logs of the output i.e
 ```
@@ -24,7 +26,7 @@ No path found.
 ```
 with run time and result whether it could find a path
 
-4) After execution, teh script generates video of the respective path planner.
+4) After execution, the script generates video of the respective path planner in `media` directory.
 
 5) Instead of user input, in this project, we created a `parameters.json` file to provide inputs such as 
 
@@ -62,9 +64,36 @@ export TURTLEBOT3_MODEL=waffle
 source install/setup.bash
 ros2 launch turtlebot3_project3 competition_world.launch.py
 ```
-,then Colcon build and source the workspace. launch the world in Gazebo with "export TURTLEBOT3_MODEL=waffle" and "ros2 launch turtlebot3_project3 competition_world.launch.py". change the destination for path_coordinates for it to read the waypoints for gazebo simulation in plan_and_follow.py then launch our ROS node in a seperate terminal with "ros2 run path_follow_executor plan_and_follow".use waitkey- 0 to reach the end goal node.
+.change the destination for path_coordinates for it to read the waypoints for gazebo simulation in plan_and_follow.py then launch our ROS node in a seperate terminal with "ros2 run path_follow_executor plan_and_follow".use waitkey- 0 to reach the end goal node.
+
 ## Result
-![Comparsion of algorithms](/media/Comparison.png)
+Tested with the following `parameters`
+```
+{
+    "start": {
+        "x": 34,
+        "y": 70
+    },
+    "goal": {
+        "x": 510,
+        "y": 180
+    },
+    "clearance": 25,
+    "max_iterations": 10000,
+    "step_size": 50,
+    "goal_sample_rate" : 0.15,
+    "goal_threshold" : 3
+    
+}
+```
+### Fixed $\sigma$ = 2 Traversal
+![Fixed Sigma](/media/stacked_output.gif)
+
+### Dynamic (Adaptive) $\sigma$ Traversal
+![Dynamic sigma](/media/stacked_output_2.gif)
+
+### Moving Obstacles Traversal
+![Moving obstacles](/media/RRT_star_N_Dynamic_obstacles.gif)
 
 Compared to vanilla RRT\*, this approach:
 - Reduces the number of required iterations to reach the goal (in open spaces).
@@ -135,9 +164,5 @@ This makes the sampling **adaptive**, allowing RRT\*N to escape local minima whi
 
 
 
-
-## Comparison of algorithms:
-<video src="videos/stacked_output.mp4" controls width="320" height="240">
-</video>
 
 
