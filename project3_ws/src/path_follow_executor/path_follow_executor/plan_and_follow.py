@@ -443,7 +443,8 @@ class PathFollower(ROSNode):
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
 
         # 10 Hz control loop
-        self.create_timer(0.1, self.control_loop)
+        self.timer = self.create_timer(0.1, self.control_loop)
+
 
     def odom_callback(self, msg):
         self.current_x = msg.pose.pose.position.x

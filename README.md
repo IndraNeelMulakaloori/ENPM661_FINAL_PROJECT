@@ -66,7 +66,8 @@ This makes the sampling **adaptive**, allowing RRT\*N to escape local minima whi
 
 ## Comparison of algorithms:
 <video controls src="videos/stacked_output.mp4" title="Title"></video>
-
+## Gazebo Simulation
+clone project3_ws,then Colcon build and source the workspace. launch the world in Gazebo with "export TURTLEBOT3_MODEL=waffle" and "ros2 launch turtlebot3_project3 competition_world.launch.py". change the destination for path_coordinates for it to read the waypoints for gazebo simulation in plan_and_follow.py then launch our ROS node in a seperate terminal with "ros2 run path_follow_executor plan_and_follow".use waitkey- 0 to reach the end goal node.
 ## Result
 
 Compared to vanilla RRT\*, this approach:
