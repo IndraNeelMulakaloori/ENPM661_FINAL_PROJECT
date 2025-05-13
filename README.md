@@ -133,8 +133,11 @@ Finished 'plan' in 2.3171 secs
 No path found.
 ```
 with run time and result whether it could find a path
+
 4) After execution, teh script generates video of the respective path planner.
-5) Instead of user input, in this project, we created a `parameters.json` file to provide inputs such as \
+
+5) Instead of user input, in this project, we created a `parameters.json` file to provide inputs such as 
+
 **Input Parameters** :
 
 ```
