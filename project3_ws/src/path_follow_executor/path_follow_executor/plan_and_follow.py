@@ -538,9 +538,9 @@ def main():
         rclpy.spin(follower)
         follower.destroy_node()
         rclpy.shutdown()
-        for i in range(len(path)-1):
-            x, y = path[i]
-            x2, y2 = path[i+1]
+        # for i in range(len(path)-1):
+        #     x, y = path[i]
+        #     x2, y2 = path[i+1]
             # expanded_map_2[y, x] = [0, 255, 0]
             # Color the path green
             # cv2.circle(expanded_map_2, (x, y), 3, (0, 255, 0), -1)
