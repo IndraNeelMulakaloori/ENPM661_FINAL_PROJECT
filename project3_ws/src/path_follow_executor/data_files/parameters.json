@@ -1,0 +1,16 @@
+{
+    "start": {
+        "x": 34,
+        "y": 70
+    },
+    "goal": {
+        "x": 510,
+        "y": 180
+    },
+    "clearance": 25,
+    "max_iterations": 10000,
+    "step_size": 50,
+    "goal_sample_rate" : 0.15,
+    "goal_threshold" : 3
+    
+}

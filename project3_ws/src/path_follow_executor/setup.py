@@ -8,6 +8,7 @@ setup(
     packages=[package_name],
     data_files=[
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/parameters_dir', ['data_files/parameters.json'])
     ],
     install_requires=['setuptools', 'numpy', 'opencv-python'],
     zip_safe=True,

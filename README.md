@@ -55,8 +55,10 @@ to perform several tests.\
 6) `stacked_output.py` generates the stacked output of the videos for comaprison between performance of the alogrithms.
 
 ## Gazebo Simulation
-1) Change Directory to `project3_ws`
-`cd project3_ws`
+1) Change Directory to `project3_ws` 
+```
+cd project3_ws
+```
 2) Build the workspace, export the **Turtlebot3**  model, source and launch the world
 ```
 colcon build --symlink install
