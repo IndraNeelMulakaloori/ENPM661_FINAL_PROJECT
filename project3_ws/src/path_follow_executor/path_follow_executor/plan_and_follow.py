@@ -8,8 +8,6 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from pathlib import Path
 import math
-from ament_index_python.packages import get_package_share_directory
-import os
 
 HEIGHT = 300 # cm
 WIDTH = 600 # cm
@@ -139,14 +137,14 @@ class RRT:
 
         if recent_failures > .8:
             self.sigma = min(self.sigma_max, self.sigma * alpha)
-            # print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
+            print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
         
         elif recent_progress > 0.1:
             self.sigma = max(self.sigma_min, self.sigma * beta)
-            # print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
+            print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
         elif recent_progress < 0.1:
             self.sigma = min(self.sigma_max, self.sigma * alpha)
-            # print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
+            print(f"Sigma updated to {self.sigma} based on recent progress: {recent_progress} and failures: {recent_failures}")
 
     def probability_density_function(self):
         success = False
@@ -325,7 +323,7 @@ class RRT:
                     node.node_cost = new_cost
 
     def plan(self,video_output=None):
-        # video_frame_counter = 0
+        video_frame_counter = 0
         iteration_counter = 0
         for iteration_counter in range(self.max_iter):
             rand_node = self.sample_random_point()
@@ -350,52 +348,52 @@ class RRT:
                     self.progress_buffer.append(0)
                     self.update_sigma()
 
-                # video_frame_counter += 1
-                # if video_frame_counter == 1:
-                    # draw_map = self.visualize_map.copy()
+                video_frame_counter += 1
+                if video_frame_counter == 1:
+                    draw_map = self.visualize_map.copy()
 
                     # Code to draw sigma bounds.
-                    ##                    
+                    ###                    
                     # Draw centerline bounds at ±sigma.
-                    # line_vec = np.array([self.goal.x - self.start.x, self.goal.y - self.start.y])
-                    # line_length = np.linalg.norm(line_vec)
-                    # if line_length == 0:
-                        # return  # Avoid division by zero.
+                    line_vec = np.array([self.goal.x - self.start.x, self.goal.y - self.start.y])
+                    line_length = np.linalg.norm(line_vec)
+                    if line_length == 0:
+                        return  # Avoid division by zero.
 
-                    # line_unit = line_vec / line_length
-                    # line_normal = np.array([-line_unit[1], line_unit[0]])  # Perpendicular to centerline.
+                    line_unit = line_vec / line_length
+                    line_normal = np.array([-line_unit[1], line_unit[0]])  # Perpendicular to centerline.
 
                     # Offset lines at ±sigma.
-                    # offset = self.sigma
-                    # start_point = np.array([self.start.x, self.start.y])
-                    # goal_point = np.array([self.goal.x, self.goal.y])
+                    offset = self.sigma
+                    start_point = np.array([self.start.x, self.start.y])
+                    goal_point = np.array([self.goal.x, self.goal.y])
 
-                    # offset1_start = start_point + offset * line_normal
-                    # offset1_goal = goal_point + offset * line_normal
-                    # offset2_start = start_point - offset * line_normal
-                    # offset2_goal = goal_point - offset * line_normal
+                    offset1_start = start_point + offset * line_normal
+                    offset1_goal = goal_point + offset * line_normal
+                    offset2_start = start_point - offset * line_normal
+                    offset2_goal = goal_point - offset * line_normal
 
                     # Convert to integer pixel coordinates.
-                    # offset1_start = tuple(np.round(offset1_start).astype(int))
-                    # offset1_goal = tuple(np.round(offset1_goal).astype(int))
-                    # offset2_start = tuple(np.round(offset2_start).astype(int))
-                    # offset2_goal = tuple(np.round(offset2_goal).astype(int))
+                    offset1_start = tuple(np.round(offset1_start).astype(int))
+                    offset1_goal = tuple(np.round(offset1_goal).astype(int))
+                    offset2_start = tuple(np.round(offset2_start).astype(int))
+                    offset2_goal = tuple(np.round(offset2_goal).astype(int))
 
                     # Draw the two offset lines in gray.
-                    # cv2.line(draw_map, offset1_start, offset1_goal, color=(128, 128, 128), thickness=1)
-                    # cv2.line(draw_map, offset2_start, offset2_goal, color=(128, 128, 128), thickness=1)
-                    ##
+                    cv2.line(draw_map, offset1_start, offset1_goal, color=(128, 128, 128), thickness=1)
+                    cv2.line(draw_map, offset2_start, offset2_goal, color=(128, 128, 128), thickness=1)
+                    ###
 
-                    # cv2.circle(draw_map, (rand_node.x,rand_node.y), 5, (255, 255, 255), -1)  # Mark the new node
-                    # 
-                    # for node in self.tree:
-                        # if node.parent is not None:
-                            # cv2.line(draw_map, (node.parent.x, node.parent.y), (node.x, node.y), (255, 255, 255), 1)
-                    # video_output.write(draw_map)
-                    # video_frame_counter = 0
-                    # print(f"New Node: {new_node.x}, {new_node.y}")
-                    # cv2.imshow("RRT", draw_map)
-                    # cv2.waitKey(0)
+                    cv2.circle(draw_map, (rand_node.x,rand_node.y), 5, (255, 255, 255), -1)  # Mark the new node
+                    
+                    for node in self.tree:
+                        if node.parent is not None:
+                            cv2.line(draw_map, (node.parent.x, node.parent.y), (node.x, node.y), (255, 255, 255), 1)
+                    video_output.write(draw_map)
+                    video_frame_counter = 0
+                    print(f"New Node: {new_node.x}, {new_node.y}")
+                    cv2.imshow("RRT", draw_map)
+                    cv2.waitKey(0)
                 
                 if self.is_goal_reached(new_node):
                     print(f"Goal Reached! with node count {len(self.tree)} within {iteration_counter} iterations")
@@ -494,75 +492,69 @@ class PathFollower(ROSNode):
         self.cmd_pub.publish(twist)
 
 def main():
-    # try:
-    
-    package_path = get_package_share_directory('path_follow_executor')
-    param_path = os.path.join(package_path, 'parameters_dir', 'parameters.json')
-    with open(param_path, 'r') as f:
-        parameters = json.load(f)
+    try:
+        parameters = json.load(open("/home/masum/Downloads/parameters.json"))
+        start = (parameters["start"]['x'], parameters["start"]['y'])
+        goal = (parameters["goal"]['x'], parameters["goal"]['y'])
+        # clearance = int(np.ceil(float(parameters["clearance"]))/10) # in cm / pixels
+        clearance = (parameters["clearance"]) 
+        robot_radius = int(np.ceil(RRADIUS*100)) # in cm / pixels
+        obstacle_map = gen_obstacle_map()
+     
+        expanded_map, expanded_mask = expand_obstacles(obstacle_map, robot_radius)
+     
+        expanded_map_2,expanded_mask_2 = expand_obstacles(expanded_map, clearance)
+       
+        
+        obstacle_map = np.where(expanded_mask_2 == 255, 1, 0).astype(np.uint8)
+       
+        cv2.circle(expanded_map_2, start , 5, (255, 0, 255), -1)
+        cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
+        video_output = create_video(filename="RRT_star_N_2_Traversal.mp4")
+        max_iterations,step_size,goal_sample_rate,goal_threshold = parameters['max_iterations'],parameters['step_size'],parameters['goal_sample_rate'],parameters['goal_threshold']
+        rrt = RRT(start, goal, obstacle_map,expanded_map_2,max_iterations,step_size,goal_sample_rate,goal_threshold)
+        path,iterations,node_count = rrt.plan(video_output=video_output)
+        # path,iterations,node_count = rrt.plan()
+        if path is not None:
+            with open("/home/masum/project3_ws/src/path_follow_executor/path_coords.txt", "w") as f:
+                for x, y in path:
+                # divide by 100 to convert cm→m
+                    f.write(f"{x/100.0:.3f},{-(y/100.0 -1.5):.3f}\n")
+            waypoints = [(x/100.0, -(y/100.0 - 1.5)) for x,y in path]
 
-    start = (parameters["start"]['x'], parameters["start"]['y'])
-    goal = (parameters["goal"]['x'], parameters["goal"]['y'])
-    # clearance = int(np.ceil(float(parameters["clearance"]))/10) # in cm / pixels
-    clearance = (parameters["clearance"]) 
-    robot_radius = int(np.ceil(RRADIUS*100)) # in cm / pixels
-    obstacle_map = gen_obstacle_map()
-    
-    expanded_map, expanded_mask = expand_obstacles(obstacle_map, robot_radius)
-    
-    expanded_map_2,expanded_mask_2 = expand_obstacles(expanded_map, clearance)
-    
-    
-    obstacle_map = np.where(expanded_mask_2 == 255, 1, 0).astype(np.uint8)
-    
-    # cv2.circle(expanded_map_2, start , 5, (255, 0, 255), -1)
-    # cv2.circle(expanded_map_2, goal , 5, (255, 255, 0), -1)
-    
-    max_iterations,step_size,goal_sample_rate,goal_threshold = parameters['max_iterations'],parameters['step_size'],parameters['goal_sample_rate'],parameters['goal_threshold']
-    rrt = RRT(start, goal, obstacle_map,expanded_map_2,max_iterations,step_size,goal_sample_rate,goal_threshold)
-    # path,iterations,node_count = rrt.plan(video_output=video_output)
-    
-    path,iterations,node_count = rrt.plan()
-    ## IF path is not None, then we can proceed to follow the path.
-    if path is not None:
-    #     with open("path_coords.txt", "w") as f:
-    #         for x, y in path:
-    #         # divide by 100 to convert cm→m
-    #             f.write(f"{x/100.0:.3f},{-(y/100.0 -1.5):.3f}\n")
-    ## Convert the path coordinates to ROS2 format
-        waypoints = [(x/100.0, -(y/100.0 - 1.5)) for x,y in path]
-    # lunch ROS2 node
-        rclpy.init()
-        # Passing the waypoints to the PathFollower node
-        follower = PathFollower(waypoints)
-        rclpy.spin(follower)
-        follower.destroy_node()
-        rclpy.shutdown()
-        # for i in range(len(path)-1):
-        #     x, y = path[i]
-        #     x2, y2 = path[i+1]
-            # expanded_map_2[y, x] = [0, 255, 0]
-            # Color the path green
-            # cv2.circle(expanded_map_2, (x, y), 3, (0, 255, 0), -1)
-            # cv2.line(expanded_map_2, (x, y), (x2, y2), (0, 255, 0), 1)
-        
-        # for _ in range(30):
-        #     # Write the frame to the video file
-        #     cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-           
-        
-        # cv2.imshow("RRT Path", expanded_map_2)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-    else:
-        print("No path found.")
-        # video_output.release()
-        # cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        # cv2.imshow("Obstacle Map", expanded_map_2)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-    # finally:
-    #     video_output.release()
+    # launch ROS2 node
+            rclpy.init()
+            follower = PathFollower(waypoints)
+            rclpy.spin(follower)
+            follower.destroy_node()
+            rclpy.shutdown()
+            for i in range(len(path)-1):
+                x, y = path[i]
+                x2, y2 = path[i+1]
+                # expanded_map_2[y, x] = [0, 255, 0]
+                # Color the path green
+                cv2.circle(expanded_map_2, (x, y), 3, (0, 255, 0), -1)
+                cv2.line(expanded_map_2, (x, y), (x2, y2), (0, 255, 0), 1)
+            
+            for _ in range(30):
+                # Write the frame to the video file
+                cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                video_output.write(expanded_map_2)
+            
+            cv2.imshow("RRT Path", expanded_map_2)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+        else:
+            print("No path found.")
+            # video_output.release()
+            cv2.putText(expanded_map_2, f"Iterations: {iterations} , Node count : {node_count}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            cv2.imshow("Obstacle Map", expanded_map_2)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+    finally:
+        video_output.release()
 
 if __name__ == "__main__":
     main()
+
+
