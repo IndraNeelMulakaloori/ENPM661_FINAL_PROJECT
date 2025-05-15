@@ -64,7 +64,7 @@ export TURTLEBOT3_MODEL=waffle
 source install/setup.bash
 ros2 launch turtlebot3_project3 competition_world.launch.py
 ```
-.change the destination for path_coordinates for it to read the waypoints for gazebo simulation in plan_and_follow.py then launch our ROS node in a seperate terminal with "ros2 run path_follow_executor plan_and_follow".use waitkey- 0 to reach the end goal node.
+In plan_and_follow.py script at line 496 change the parameters.json file destination from "/home/masum/Downloads/parameters.json" to "/your_path_to_file/parameters.json" and at line 519 change the path_coordinates.txt file destination from /home/masum/project3_ws/src/path_follow_executor/path_coords.txt to "your_path_to_workspace/project3_ws/src/path_follow_executor/path_coords.txt"change for it to read the waypoints for gazebo simulation then launch our ROS node in a seperate terminal with "ros2 run path_follow_executor plan_and_follow".use waitkey- 0 to reach the end goal node.
 
 ## Result
 Tested with the following `parameters`
